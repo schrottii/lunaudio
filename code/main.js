@@ -30,7 +30,7 @@ images = {
     cover: "placeholder_cover.png",
 }
 wggjStartScene = "player";
-GAMENAME = "Lunaudio";
+GAMENAME = "Lunaudia";
 
 // Return an array of audio files
 var folderPath = path.join(__dirname, "../../../audio");

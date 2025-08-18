@@ -26,7 +26,7 @@ scenes["player"] = new Scene(
         // Init
         createImage("bg", 0, 0, 1, 1, "bg");
         createImage("icon", 0.02, 0.02, 0.1, 0.1, "icon", { quadratic: true });
-        createText("header", 0.5, 0.1, "Lunaudio", { size: 48, color: "white" });
+        createText("header", 0.5, 0.1, "Lunaudia", { size: 48, color: "white" });
 
         createText("infoText1", 0.1, 0.15, "", { size: 24, color: "white", align: "left" });
         createText("infoText2", 0.1, 0.2, "", { size: 24, color: "white", align: "left" });
