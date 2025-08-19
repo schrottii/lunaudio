@@ -1,25 +1,50 @@
 var playlist = getAudioFiles();
 var playlistP = 0;
 var currentSong = "";
+var started = false;
 
 wggjAudio.onended = () => {
-    if (playlistP < playlist.length - 1) playlistP++;
-    else playlistP = 0;
-    updateMusic();
+    if (playlistP < playlist.length - 1) {
+        nextSong();
+        updateMusic();
+    }
+    else {
+        playlistP = 0;
+        updateMusic();
+    }
 }
 
 wggjAudio.oncanplay = () => {
-    wggjAudio.play();
+    if (started) wggjAudio.play();
 }
 
+function nextSong() {
+    if (playlist.length <= 1) return false;
+
+    if (shuffle) {
+        let nextP = playlistP;
+
+        while (playlistP == nextP) {
+            nextP = Math.floor(Math.random() * playlist.length);
+        }
+
+        playlistP = nextP;
+    }
+    else {
+        playlistP++;
+    }
+}
 
 function updateMusic() {
     wggjAudio.currentTime = 0;
     currentSong = playlist[playlistP];
 
     wggjAudio.src = currentSong;
-    wggjAudio.loop = false;
+    wggjAudio.loop = repeat;
 }
+
+var repeat = false;
+var shuffle = false;
 
 scenes["player"] = new Scene(
     () => {
@@ -35,10 +60,15 @@ scenes["player"] = new Scene(
 
         createImage("coverArt", 0.5, 0.25, 0.4, 0.4, "cover", { quadratic: true, centered: true });
 
-        createSquare("progressBarBG", 0.2, 0.925, 0.6, 0.05, "black");
-        createSquare("progressBar", 0.2, 0.925, 0.6, 0.05, "pink");
+        createImage("progressBarBG", 0.2, 0.925, 0.6, 0.05, "bar");
+        createSquare("progressBarHider", 0.2, 0.925, 0.6, 0.05, "pink");
 
-        // Buttons
+        createButton("btnInfo", 0.95, 0.05, 0.1, 0.1, "button", () => {
+            loadScene("info");
+        }, { quadratic: true, centered: true });
+        createText("btnInfoText", 0.95, 0.125, "i", { size: 32, color: "white" });
+
+        // Bottom Buttons
         createButton("btnPrev", 0.3, 0.8, 0.1, 0.1, "button", () => {
             if (playlistP > 0) {
                 playlistP--;
@@ -56,19 +86,31 @@ scenes["player"] = new Scene(
                 wggjAudio.paused = true;
                 wggjAudio.pause();
             }
+            started = true;
         }, { quadratic: true, centered: true });
         createText("btnPauseText", 0.5, 0.875, "II", { size: 32, color: "white" });
 
         createButton("btnNext", 0.7, 0.8, 0.1, 0.1, "button", () => {
-            if (playlistP < playlist.length - 1) {
-                playlistP++;
+            if (playlistP < playlist.length - 1 || shuffle) {
+                nextSong();
                 updateMusic();
             }
         }, { quadratic: true, centered: true });
         createText("btnNextText", 0.7, 0.875, ">", { size: 32, color: "white" });
 
-        // start
-        updateMusic();
+        createButton("btnRepeat", 0.1, 0.75, 0.08, 0.08, "button", () => {
+            repeat = !repeat;
+            wggjAudio.loop = repeat;
+        }, { quadratic: true, centered: true });
+        createText("btnRepeatText", 0.1, 0.825, "Repeat", { size: 24, color: "white" });
+
+        createButton("btnShuffle", 0.1, 0.55, 0.08, 0.08, "button", () => {
+            shuffle = !shuffle;
+        }, { quadratic: true, centered: true });
+        createText("btnShuffleText", 0.1, 0.625, "Shuffle", { size: 24, color: "white" });
+
+        // start, but not from another scene
+        if (currentSong == "") updateMusic();
     },
     (tick) => {
         // Loop
@@ -79,7 +121,11 @@ scenes["player"] = new Scene(
         objects["infoText3"].text = wggjAudio.currentTime.toFixed(0) + "s / " + wggjAudio.duration.toFixed(0) + "s";
         objects["infoText4"].text = "#" + (playlistP + 1) + " / #" + playlist.length;
 
-        objects["progressBar"].w = 0.6 * (wggjAudio.currentTime / wggjAudio.duration);
+        objects["progressBarHider"].w = 0.6 - (0.6 * (wggjAudio.currentTime / wggjAudio.duration));
+        objects["progressBarHider"].x = 0.8 - objects["progressBarHider"].w;
+
+        objects["btnRepeatText"].color = repeat ? "lime" : "white";
+        objects["btnShuffleText"].color = shuffle ? "lime" : "white";
 
         //objects["coverArt"].source = images.cover;
     }

@@ -4,4 +4,10 @@ html, body {
     height: 100%;
     margin: 0;
     overflow-y: hidden;
+    font-family: OpenSans;
+}
+
+@font-face {
+    font-family: 'OpenSans';
+    src: url('font.ttf');
 }

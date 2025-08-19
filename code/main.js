@@ -1,5 +1,5 @@
 // ELECTRON
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, shell } = require("electron");
 const path = require("path");
 const fs = require("fs");
 
@@ -9,17 +9,34 @@ function createWindow() {
     mainWindow = new BrowserWindow({
         width: 1920,
         height: 960,
+        icon: "images/icon.ico",
         webPreferences: {
             nodeIntegration: true,
-            contextIsolation: false
+            contextIsolation: false,
         }
     });
 
     mainWindow.setMenuBarVisibility(false);
     mainWindow.loadFile(path.join(__dirname, "../index.html"));
 
-    //mainWindow.webContents.openDevTools();
-} 
+    // open only http and https links in external browser
+    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+        if (url.startsWith('http:') || url.startsWith('https:')) {
+            shell.openExternal(url);
+            return { action: 'deny' };
+        }
+        return { action: 'allow' }; // allow local/internal stuff
+    });
+
+    mainWindow.webContents.on('will-navigate', (event, url) => {
+        if (url.startsWith('http:') || url.startsWith('https:')) {
+            event.preventDefault();
+            shell.openExternal(url);
+        }
+    });
+
+    // mainWindow.webContents.openDevTools();
+}
 
 // WGGJ
 images = {
@@ -28,9 +45,11 @@ images = {
     button: "button.png",
     placeholderCover: "placeholder_cover.png",
     cover: "placeholder_cover.png",
+    bar: "colorful_bar.png",
 }
 wggjStartScene = "player";
 GAMENAME = "Lunaudia";
+FONT = "OpenSans";
 
 // Return an array of audio files
 var folderPath = path.join(__dirname, "../../../audio");
@@ -62,7 +81,6 @@ function getAudioFiles() {
     }
 
     try {
-
         files = fs.readdirSync(folderPath)
             .filter(file => allowedExt.includes(path.extname(file).toLowerCase()))
             .map(file => path.join(folderPath, file));
